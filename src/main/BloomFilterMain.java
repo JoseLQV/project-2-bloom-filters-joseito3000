@@ -1,5 +1,6 @@
 package main;
 
+import dataStructures.List;
 
 /**
  * Class where the Bloom Filter logic will be implemented.
@@ -8,9 +9,9 @@ package main;
  * @author Gretchen Bonilla
  *
  */
-public class BloomFilterMain {
+public class BloomFilterMain extends BloomFilter {
 
-	
+			
 	public static void main(String[] args) {
 		/*
 		 * BLOOM FILTER LOGIC DESCRIBED IN THE DOCUMENT GOES HERE
@@ -18,7 +19,15 @@ public class BloomFilterMain {
 		 * When the main finishes executing it should produce results.csv 
 		 * and the output should be the same as the one shown in expected_output.csv
 		 */
+		BloomFilter bf = new BloomFilter();
 		
+		List<String> db = bf.createDatabase("inputFiles/database.csv");
+		List<String> cb = bf.createCheck("inputFiles/db_check.csv");
+		bf.bloomFilter();
+		bf.fillingBloomFilter();
+		bf.generateResults();
+			
+																						
 	}
-
+		
 }
