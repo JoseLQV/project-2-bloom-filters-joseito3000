@@ -27,6 +27,7 @@ public class BloomFilterMain extends BloomFilter {
 		bf.fillingBloomFilter();
 		bf.generateResults();
 			
+		
 																						
 	}
 		

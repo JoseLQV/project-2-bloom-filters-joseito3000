@@ -17,7 +17,7 @@ public class BloomFilter implements BaseBloomFilter {
 	/*----------Private Fields----------*/
 	private List<String> allBaseUsernames;
 	private List<String> allCheckUsernames;
-	List<Boolean> bList;
+	private List<Boolean> bList;
 
 	/**
 	 * createDatabase
@@ -37,15 +37,11 @@ public class BloomFilter implements BaseBloomFilter {
 
 
 			while((line = br.readLine()) != null) {
-
 				String[] columnValue = line.split(",");//excel into an array of strings 
 				String userName = columnValue[0];
-				String userEmail = columnValue[1];
-				int userProfile = Integer.parseInt(columnValue[2]);
+				Integer.parseInt(columnValue[2]);
 
 				allBaseUsernames.add(userName);
-				
-				
 			}
 			this.allBaseUsernames = allBaseUsernames;	
 			return allBaseUsernames;
@@ -87,7 +83,6 @@ public class BloomFilter implements BaseBloomFilter {
 		}catch (FileNotFoundException e){
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
@@ -108,12 +103,11 @@ public class BloomFilter implements BaseBloomFilter {
 	public List<Boolean> bloomFilter() {
 		// TODO Auto-generated method stub
 		List<Boolean>bList = new LinkedList<Boolean>();
-		int count = 0 ;
+		int count = 0;
 		while(count < Size(allBaseUsernames.size())) {
 			bList.add(false);
 			count++;
 		}
-		
 		this.bList = bList;
 		return bList;
 	}
@@ -151,17 +145,15 @@ public class BloomFilter implements BaseBloomFilter {
 	public List<Boolean> fillingBloomFilter() {
 		// TODO Auto-generated method stub
 		int n = allBaseUsernames.size();
-		int m = bloomFilter().size();
-		for(int i = 0; i< allBaseUsernames.size(); i++) {
-			String w = allBaseUsernames.get(i);
-			for(int j= 0; j< RepeatHashing(m, n); j++) {
+		int m = bList.size();
+		int repeatNum =  RepeatHashing(m, n);
+		for(String w: allBaseUsernames) {
+			for(int j= 0; j< repeatNum; j++) {
 				int h = hashing(w, j);
-				bloomFilter().set(PositionAfterHashing(h, m),true);
-			}
-			
+				bList.set(PositionAfterHashing(h,m),true);
+			}	
 		}
-		
-		return bloomFilter();
+		return bList;
 	}
 
 	/**
@@ -174,35 +166,39 @@ public class BloomFilter implements BaseBloomFilter {
 	@Override
 	public void generateResults() {
 		// TODO Auto-generated method stub
-		try {
-			BufferedWriter writer = new BufferedWriter(new FileWriter("outputFiles/results.csv"));
-			writer.write("Username,Result\n");
-			List<Boolean> newList = new LinkedList<>();
-			int n = allCheckUsernames.size();
-			int m = bloomFilter().size();
-			boolean inDatabase = true;
-			for(String username : this.allCheckUsernames) {
-				for(int j= 0; j < RepeatHashing(m, n); j++) {
-					int pos = hashing(username, j) % this.bList.size();
-					if(!bList.get(pos)) {
-						writer.write(username + ",Not in the DB\n");
-						inDatabase = false;
-						break;
+			try (BufferedWriter writer = new BufferedWriter(new FileWriter("outputFiles/results.csv"))){
+				
+				writer.write("Username,Result\n");
+
+				int n = allBaseUsernames.size();
+				int m = bList.size();
+				int repeatNum = RepeatHashing(m, n);
+				
+				for(String username : allCheckUsernames) {
+					boolean inDatabase = true;
+					for(int j= 0; j < repeatNum; j++) {
+						int pos = hashing(username, j) % bList.size();
+						
+						if(!bList.get(pos)) {
+							writer.write(username + ",Not in the DB\n");
+							inDatabase = false;
+							break;
+						}	
 					}
-					
+					if(inDatabase) {
+						writer.write(username + ",Probaly in the DB\n");	
+					}
 				}
-				
-				if(inDatabase) {
-					writer.write(username + ",Probaly in the DB\n");
-				}
-				
+				writer.close();
 			}
-		} catch (IOException e) {
+			catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}		
 
 	}
+	
+	
 
 	/*--------Auxiliary Methods------------*/
 	
@@ -212,7 +208,7 @@ public class BloomFilter implements BaseBloomFilter {
 	 * @param n is the size of the database
 	 * **/
 	public int Size(int n) {
-		int result = (int) -((n*Math.log(0.0000001))/(Math.pow(Math.log(2), 2)));
+		int result = (int) -((n*Math.log(0.0000001)/(Math.pow(Math.log(2), 2))));
 		return result;
 	}
 
@@ -223,7 +219,7 @@ public class BloomFilter implements BaseBloomFilter {
 	 * @param n is the size of the database
 	 * **/
 	public int RepeatHashing(int m, int n) { 
-		return (int) ((m * Math.log(2))/n);
+		return (int) (m * Math.log(2))/n;
 	}
 
 	/**
